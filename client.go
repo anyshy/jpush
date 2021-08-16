@@ -9,16 +9,21 @@ import (
 	"github.com/levigross/grequests"
 )
 
+const (
+	ApiHost     = "https://api.jpush.cn/v3"
+	DevicesHost = "https://device.jpush.cn/v3/devices"
+)
+
 type JpushClient struct {
 	*grequests.Session
-	host      string
+	Host      string
 	appKey    string
 	appSecret string
 }
 
 func NewJpushClient(appKey, appSecret string) *JpushClient {
 	return &JpushClient{
-		host:      "https://api.jpush.cn/v3",
+		Host:      ApiHost,
 		appKey:    appKey,
 		appSecret: appSecret,
 		Session: grequests.NewSession(&grequests.RequestOptions{
@@ -31,8 +36,16 @@ func NewJpushClient(appKey, appSecret string) *JpushClient {
 	}
 }
 
+func (j *JpushClient) ApiHost() {
+	j.Host = ApiHost
+}
+
+func (j *JpushClient) DevicesHost() {
+	j.Host = DevicesHost
+}
+
 func (j *JpushClient) Url(path string) string {
-	return j.host + path
+	return j.Host + path
 }
 
 // cid 是用于防止 api 调用端重试造成服务端的重复推送而定义的一个推送参数。
@@ -214,6 +227,13 @@ func (j *JpushClient) TagDelete(tag string) error {
 func (j *JpushClient) Do(method, path string, inp, out interface{}) error {
 	var resp *grequests.Response
 	var err error
+	if strings.Contains(path, "devices") ||
+		strings.Contains(path, "aliases") ||
+		strings.Contains(path, "tags") {
+		j.DevicesHost()
+	} else {
+		j.ApiHost()
+	}
 
 	url := j.Url(path)
 	if method == http.MethodGet {
