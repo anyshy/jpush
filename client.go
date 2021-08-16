@@ -11,7 +11,7 @@ import (
 
 const (
 	ApiHost     = "https://api.jpush.cn/v3"
-	DevicesHost = "https://device.jpush.cn/v3/devices"
+	DevicesHost = "https://device.jpush.cn/v3"
 )
 
 type JpushClient struct {
